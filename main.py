@@ -58,7 +58,6 @@ while True:
             
             
     bbox_id=tracker.update(list)
-    cv2.putText(frame,"Vehicle Count:" + str(len(bbox_id)),(10,30),cv2.FONT_HERSHEY_COMPLEX,0.8,(0,255,255),2)
     for bbox in bbox_id:
         x3,y3,x4,y4,id=bbox
         cx=int(x3+x4)//2
