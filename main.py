@@ -1,39 +1,76 @@
 import cv2
-import numpy as np
+import pandas as pd
+from ultralytics import YOLO
+from tracker import*
 
-cap = cv2.VideoCapture('carsVideo.mp4')
+model=YOLO('yolov8s.pt')
 
-fgbg = cv2.createBackgroundSubtractorMOG2()
-output_width = 640
-output_height = 480
+def RGB(event, x, y, flags, param):
+    if event == cv2.EVENT_MOUSEMOVE :  
+        colorsBGR = [x, y]
+        print(colorsBGR)
+        
 
-while True:
-    ret, frame = cap.read()
+cv2.namedWindow('RGB')
+cv2.setMouseCallback('RGB', RGB)
 
+cap=cv2.VideoCapture(r"traffic4.mp4")
+
+
+my_file = open("coco.txt", "r")
+data = my_file.read()
+class_list = data.split("\n") 
+#print(class_list)
+
+count=0
+
+tracker=Tracker()
+
+cy1=322
+cy2=368
+offset=6
+
+while True:    
+    ret,frame = cap.read()
     if not ret:
         break
-    
-    frame = cv2.resize(frame, (output_width, output_height))
-    fgmask = fgbg.apply(frame)
+    count += 1
+    if count % 3 != 0:
+        continue
+    frame=cv2.resize(frame,(1020,500))
+   
 
-    blur = cv2.GaussianBlur(fgmask, (5, 5), 0)
+    results=model.predict(frame)
+ #   print(results)
+    a=results[0].boxes.data
+    px=pd.DataFrame(a).astype("float")
+    list=[]
+             
+    for index,row in px.iterrows():
+ 
+        x1=int(row[0])
+        y1=int(row[1])
+        x2=int(row[2])
+        y2=int(row[3])
+        d=int(row[5])
+        c=class_list[d]
+        if ('car' in c) or ('bus' in c) or ('truck' in c):
+            list.append([x1,y1,x2,y2])
+            
+            
+    bbox_id=tracker.update(list)
+    cv2.putText(frame,"Vehicle Count:" + str(len(bbox_id)),(10,30),cv2.FONT_HERSHEY_COMPLEX,0.8,(0,255,255),2)
+    for bbox in bbox_id:
+        x3,y3,x4,y4,id=bbox
+        cx=int(x3+x4)//2
+        cy=int(y3+y4)//2
+        cv2.circle(frame,(cx,cy),4,(0,0,255),-1)
+        cv2.rectangle(frame, (x3,y3), (x4,y4), (0,255,0), 2)
 
-    _, thresh = cv2.threshold(blur, 127, 255, cv2.THRESH_BINARY)
-    contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-    for contour in contours:
-        area = cv2.contourArea(contour)
-
-        if area > 100:
-           
-            x, y, w, h = cv2.boundingRect(contour)
-            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-
-    cv2.imshow('Object Detection', frame)
-    cv2.waitKey(20)
-
-    if cv2.waitKey(1) & 0xFF == ord('x'):
+        #cv2.line(frame,(274,cy1),(814,cy1),(255,255,255),1)
+        #cv2.line(frame,(177,cy2),(927,cy2),(255,255,255),1)
+    cv2.imshow("RGB", frame)
+    if cv2.waitKey(1)&0xFF==27:
         break
-
 cap.release()
 cv2.destroyAllWindows()
