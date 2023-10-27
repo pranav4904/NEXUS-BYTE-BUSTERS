@@ -20,7 +20,7 @@ cap=cv2.VideoCapture(r"traffic4.mp4")
 my_file = open("coco.txt", "r")
 data = my_file.read()
 class_list = data.split("\n") 
-#print(class_list)
+
 
 count=0
 
@@ -41,7 +41,6 @@ while True:
    
 
     results=model.predict(frame)
- #   print(results)
     a=results[0].boxes.data
     px=pd.DataFrame(a).astype("float")
     list=[]
@@ -67,8 +66,6 @@ while True:
         cv2.circle(frame,(cx,cy),4,(0,0,255),-1)
         cv2.rectangle(frame, (x3,y3), (x4,y4), (0,255,0), 2)
 
-        #cv2.line(frame,(274,cy1),(814,cy1),(255,255,255),1)
-        #cv2.line(frame,(177,cy2),(927,cy2),(255,255,255),1)
     cv2.imshow("RGB", frame)
     if cv2.waitKey(1)&0xFF==27:
         break
