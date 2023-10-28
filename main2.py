@@ -15,7 +15,7 @@ def RGB(event, x, y, flags, param):
 cv2.namedWindow('RGB')
 cv2.setMouseCallback('RGB', RGB)
 
-cap = cv2.VideoCapture(r"traffic3.mp4")
+cap = cv2.VideoCapture(r"traffic22.mp4")
 
 my_file = open("coco.txt", "r")
 data = my_file.read()
@@ -69,7 +69,7 @@ while True:
             x3, y3, x4, y4, id = bbox
             cx = int(x3 + x4) // 2
             cy = int(y3 + y4) // 2
-            speed = speed_limit * pixels_per_meter / time_difference / 100 * 1.5
+            speed = speed_limit * pixels_per_meter / time_difference / 100 * 2.5
             cv2.putText(frame, "Speed: " + str(int(speed)) + " km/h", (cx, cy), cv2.FONT_HERSHEY_COMPLEX, 0.5, (0, 255, 255), 1)
             cv2.circle(frame, (cx, cy), 4, (0, 0, 255), -1)
             cv2.rectangle(frame, (x3, y3), (x4, y4), (0, 255, 0), 2)
